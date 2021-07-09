@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Animation/AnimInstance.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -42,8 +43,7 @@ AMainCharacter::AMainCharacter()
   // Camera does not rotate relative to arm
   FollowCamera->bUsePawnControlRotation = false;
 
-
-
+  bAttacking = false;
 
 }
 
@@ -88,6 +88,16 @@ void AMainCharacter::MoveRight(float Value)
 
 }
 
+void AMainCharacter::LMBDown()
+{
+  if (bAttacking) { return; }
+  bAttacking = true;
+  UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+  if (AnimInstance && CountessAttackMontage) { 
+    AnimInstance->Montage_Play(CountessAttackMontage);
+  }
+}
+
 // Called every frame
 void AMainCharacter::Tick(float DeltaTime)
 {
@@ -107,6 +117,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
   PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
   PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+
+  PlayerInputComponent->BindAction("LMBDown", IE_Pressed, this, &AMainCharacter::LMBDown);
 
 }
 

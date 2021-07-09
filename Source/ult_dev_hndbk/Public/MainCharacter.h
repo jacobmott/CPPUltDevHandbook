@@ -33,6 +33,16 @@ protected:
   /** Called for side to side input */
   void MoveRight(float Value);
 
+  /** Called when the right mouse button is pressed */
+  void LMBDown();
+
+  /** Boolean for when the character is attacking */
+  UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat")
+  bool bAttacking;
+
+  UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anims") 
+  class UAnimMontage* CountessAttackMontage;
+
 
 public:	
 	// Called every frame
