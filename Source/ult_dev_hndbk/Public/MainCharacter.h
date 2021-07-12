@@ -20,8 +20,27 @@ private:
   class UCameraComponent* FollowCamera;
 
 public:
+  /** Reference to the Player Controller */
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller")
+  class AMainPlayerController* MainPlayerController;
+
+
+public:
 	// Sets default values for this character's properties
 	AMainCharacter();
+
+  FORCEINLINE float GetHealth() { 
+    return Health;
+  }
+
+  void SetHealth(float Amount);
+
+  FORCEINLINE float GetMaxHealth() { 
+    return MaxHealth; 
+  }
+  FORCEINLINE void SetMaxHealth(float Amount) { 
+    MaxHealth = Amount; 
+  }
 
 protected:
 	// Called when the game starts or when spawned
@@ -36,12 +55,20 @@ protected:
   /** Called when the right mouse button is pressed */
   void LMBDown();
 
+  void ESCDown();
+
   /** Boolean for when the character is attacking */
   UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat")
   bool bAttacking;
 
   UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anims") 
   class UAnimMontage* CountessAttackMontage;
+
+  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerStats")
+  float Health;
+
+  UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PlayerStats")
+  float MaxHealth;
 
 
 public:	
@@ -50,5 +77,11 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+  UFUNCTION(BlueprintCallable)
+  void SaveGame();
+
+  UFUNCTION(BlueprintCallable)
+  void LoadGame();
 
 };
