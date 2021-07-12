@@ -11,6 +11,10 @@
 #include "CountessSaveGame.h"
 #include "Kismet/GameplayStatics.h"
 
+//Chapter 10 debugging, ultimate c++ hndbck book
+#include "DrawDebugHelpers.h"
+#include "../ult_dev_hndbk.h"
+
 // Sets default values
 AMainCharacter::AMainCharacter()
 {
@@ -71,6 +75,25 @@ void AMainCharacter::BeginPlay()
   Super::BeginPlay();
   MainPlayerController = Cast<AMainPlayerController>(GetController());
   
+  UE_LOG(CountessLog, VeryVerbose, TEXT("CountessLog VeryVerbose"));
+  UE_LOG(CountessLog, Verbose, TEXT("CountessLog Verbose"));
+  UE_LOG(CountessLog, Warning, TEXT("CountessLog Warning"));
+  UE_LOG(CountessLog, Display, TEXT("CountessLog Display"));
+  UE_LOG(CountessLog, Log, TEXT("CountessLog Log"));
+  UE_LOG(CountessLog, Error, TEXT("CountessLog Error"));
+  //UE_LOG(CountessLog, Fatal, TEXT("CountessLog Fatal - This will crash the game!"));
+  if (GEngine) { 
+    GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Blue, TEXT("Printing a message to the screen!"), false);
+  }
+
+
+  print("Use of print macro");
+  print_k(2, "You will only see one of these print_k messages!");
+  print_k(2, "You will only see one of these print_k messages!");
+  print_k(2, "You will only see one of these print_k messages!");
+  print_k(2, "You will only see one of these print_k messages!");
+  printf("Formatting the string with Actor Name: %s", *GetName());
+
 }
 
 void AMainCharacter::MoveForward(float Value)
@@ -128,6 +151,48 @@ void AMainCharacter::ESCDown()
 void AMainCharacter::Tick(float DeltaTime)
 {
   Super::Tick(DeltaTime);
+  if (GEngine) {
+    FString Print = FString::Printf(TEXT("DeltaTime: %f"), DeltaTime);
+    GEngine->AddOnScreenDebugMessage(1, 1.5f, FColor::Cyan, Print, false);
+  }
+  printf_k(1, "DeltaTime: %f", DeltaTime);
+  DrawDebugPoint(GetWorld(), GetActorLocation() + FVector(0.f, 0.f, 50.f), 5.f, FColor::Blue, false, 3.f);
+  DrawDebugLine(GetWorld(), FVector(0.f, 0.f, 400.f), GetActorLocation(), FColor::Red, false, -1.f);
+
+
+  //FHitResult HitResult;
+  FVector Start = GetActorLocation() + FVector(0.f, 0.f, 75.f);
+  FVector End = Start + GetActorForwardVector() * 500.f;
+  //FCollisionQueryParams CollisionQueryParams;
+  //CollisionQueryParams.AddIgnoredActor(this);
+  //GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECollisionChannel::ECC_Visibility, CollisionQueryParams);
+  //if (HitResult.bBlockingHit) { 
+  //  DrawDebugSphere(GetWorld(), HitResult.Location, 15.f, 12, FColor::Red, false, 5.f);
+  //}
+  //TArray<FHitResult> HitResults;
+  //GetWorld()->LineTraceMultiByChannel(HitResults, Start, End, ECollisionChannel::ECC_Visibility);
+
+  TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+  ObjectTypes.Add(EObjectTypeQuery::ObjectTypeQuery2);
+  TArray<AActor*> ActorsToIgnore;
+  ActorsToIgnore.Add(this);
+  FHitResult BoxTraceResult;
+  UKismetSystemLibrary::BoxTraceSingleForObjects(GetWorld(), Start, End, FVector(32.f, 32.f, 32.f), FRotator(), ObjectTypes, true, ActorsToIgnore, EDrawDebugTrace::ForOneFrame, BoxTraceResult, true, FColor::Red, FColor::Blue);
+  if (BoxTraceResult.bBlockingHit) { 
+    print_k(1, "Blocking Hit!"); 
+  }
+
+
+  //for (int32 i = 0; i < HitResults.Num(); i++) { 
+  //  if (HitResults[i].bBlockingHit) { 
+  //    FString ActorName = HitResults[i].Actor->GetName();
+  //    printf_k(i, "%d Actor Name: %s", i, *ActorName); 
+  //  } 
+  //  else {
+  //    printf_k(i, "%d Failed hit!", i);
+  //  } 
+  //}
+
 
 }
 
