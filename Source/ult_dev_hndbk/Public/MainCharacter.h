@@ -6,10 +6,14 @@
 #include "GameFramework/Character.h"
 #include "MainCharacter.generated.h"
 
+DECLARE_DELEGATE(FRotateDelegate);
+DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(float, FDynamicRotateDelegate, float, RotationSpeed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDynamicMulticastRotateDelegate, bool, bPlaySound);
+
 UCLASS()
 class ULT_DEV_HNDBK_API AMainCharacter : public ACharacter
 {
-	GENERATED_BODY()
+  GENERATED_BODY()
 private:
   /** Camera boom positioning the camera behind the character */
   UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -26,8 +30,8 @@ public:
 
 
 public:
-	// Sets default values for this character's properties
-	AMainCharacter();
+  // Sets default values for this character's properties
+  AMainCharacter();
 
   FORCEINLINE float GetHealth() { 
     return Health;
@@ -42,9 +46,29 @@ public:
     MaxHealth = Amount; 
   }
 
+  FRotateDelegate RotateDelegate;
+
+  UPROPERTY()
+  FDynamicRotateDelegate DynamicRotateDelegate;
+
+  UPROPERTY(BlueprintAssignable)
+  FDynamicMulticastRotateDelegate DynamicMulticastRotateDelegate;
+
+  UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Delegates")
+  bool bShouldRotatorsPlaySound;
+
+  UPROPERTY(EditAnywhere, BlueprintReadWrite)
+  float RotatingActorRotate;
+
+  UFUNCTION(BlueprintCallable)
+  void SetRotatingActorRates(float Rate);
+
+  UFUNCTION(BlueprintCallable)
+  void PlaySoundAtRotatingActors(bool PlaySound);
+
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+  // Called when the game starts or when spawned
+  virtual void BeginPlay() override;
 
   /** Called for forwards/backward input */
   void MoveForward(float Value);
@@ -71,17 +95,20 @@ protected:
   float MaxHealth;
 
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+public: 
+  // Called every frame
+  virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+  // Called to bind functionality to input
+  virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
   UFUNCTION(BlueprintCallable)
   void SaveGame();
 
   UFUNCTION(BlueprintCallable)
   void LoadGame();
+
+  UFUNCTION(BlueprintCallable)
+  void ToggleAllRotators();
 
 };

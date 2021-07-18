@@ -15,6 +15,8 @@
 #include "DrawDebugHelpers.h"
 #include "../ult_dev_hndbk.h"
 
+#include "RotatingActor.h"
+
 // Sets default values
 AMainCharacter::AMainCharacter()
 {
@@ -54,6 +56,9 @@ AMainCharacter::AMainCharacter()
 
   Health = 85.f;
   MaxHealth = 100.f;
+
+  RotatingActorRotate = 180.f;
+  bShouldRotatorsPlaySound = true;
 
 }
 
@@ -213,6 +218,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
   PlayerInputComponent->BindAction("ESC", IE_Pressed, this, &AMainCharacter::ESCDown);
 
+
 }
 
 void AMainCharacter::SaveGame() {
@@ -234,3 +240,46 @@ void AMainCharacter::LoadGame() {
   SetActorRotation(LoadGameInstance->WorldRotation);
 }
 
+
+//void AMainCharacter::ToggleAllRotators() {
+  //TSubclassOf<AActor> WorldClassObject = ARotatingActor::StaticClass();
+  //TArray<AActor*> ActorsOfClass;
+  //UGameplayStatics::GetAllActorsOfClass(this, WorldClassObject, ActorsOfClass);
+  //for (AActor* Actor : ActorsOfClass) {
+  //  ARotatingActor * RotatingActor = Cast<ARotatingActor>(Actor);
+  //  if (RotatingActor) { 
+  //    RotatingActor->ToggleRotate();
+  //  }
+  //}
+  //RotateDelegate.ExecuteIfBound();
+//}
+
+//Direct class communication
+void AMainCharacter::ToggleAllRotators() { 
+
+  //rEGULAR DELEAGE
+  //TSubclassOf<AActor> WorldClassObject = ARotatingActor::StaticClass();
+  //TArray<AActor*> ActorsOfClass;
+  //UGameplayStatics::GetAllActorsOfClass(this, WorldClassObject, ActorsOfClass);
+  //for (AActor* Actor : ActorsOfClass) { 
+  //  ARotatingActor* RotatingActor = Cast<ARotatingActor>(Actor);
+  //  if (RotatingActor) { 
+  //    RotatingActor->ToggleRotate(); 
+  //  } 
+  //}
+  
+  
+  //Dynamic delegate
+  RotateDelegate.ExecuteIfBound();
+}
+
+
+void AMainCharacter::SetRotatingActorRates(float Rate) {
+  float PreviousRotationRate = DynamicRotateDelegate.Execute(Rate);
+  printf("Previous Rotation Rate: %f", PreviousRotationRate); 
+}
+
+
+void AMainCharacter::PlaySoundAtRotatingActors(bool PlaySound) { 
+  DynamicMulticastRotateDelegate.Broadcast(PlaySound);
+}
