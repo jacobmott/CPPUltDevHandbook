@@ -11,11 +11,18 @@
 #include "CountessSaveGame.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "Enemy.h"
+#include "Engine/SkeletalMeshSocket.h" 
+
 //Chapter 10 debugging, ultimate c++ hndbck book
 #include "DrawDebugHelpers.h"
 #include "../ult_dev_hndbk.h"
 
 #include "RotatingActor.h"
+
+
+#include "NavigationSystem.h" 
+#include "NavigationPath.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -56,6 +63,8 @@ AMainCharacter::AMainCharacter()
 
   Health = 85.f;
   MaxHealth = 100.f;
+  XP = 0;
+  Damage = 10.f;
 
   RotatingActorRotate = 180.f;
   bShouldRotatorsPlaySound = true;
@@ -99,6 +108,19 @@ void AMainCharacter::BeginPlay()
   print_k(2, "You will only see one of these print_k messages!");
   printf("Formatting the string with Actor Name: %s", *GetName());
 
+  TSubclassOf<AActor> WorldClassObject = ARotatingActor::StaticClass();
+  TArray<AActor*> ActorsOfClass;
+  UGameplayStatics::GetAllActorsOfClass(this, WorldClassObject, ActorsOfClass);
+  if (ActorsOfClass.Num() > 0) {
+    UNavigationPath* NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), ActorsOfClass[0]);
+    if (NavPath->PathPoints.Num() > 0) {
+      for (auto pt : NavPath->PathPoints) {
+        DrawDebugSphere(GetWorld(), pt, 20.f, 12, FColor::Red, true);
+      }
+    }
+  }
+
+
 }
 
 void AMainCharacter::MoveForward(float Value)
@@ -118,6 +140,8 @@ void AMainCharacter::MoveForward(float Value)
     const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
     AddMovementInput(Direction, Value);
   }
+  
+
 
 }
 
@@ -282,4 +306,36 @@ void AMainCharacter::SetRotatingActorRates(float Rate) {
 
 void AMainCharacter::PlaySoundAtRotatingActors(bool PlaySound) { 
   DynamicMulticastRotateDelegate.Broadcast(PlaySound);
+}
+
+
+void AMainCharacter::SwordBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
+  if (OtherActor)
+  {
+    AEnemy* Enemy = Cast<AEnemy>(OtherActor);
+    if (Enemy)
+    {
+      if (Enemy->HitParticles)
+      {
+        const USkeletalMeshSocket* WeaponSocket = GetMesh()->GetSocketByName("WeaponBladeLSocket");
+        if (WeaponSocket)
+        {
+          FVector SocketLocation = WeaponSocket->GetSocketLocation(GetMesh());
+          UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Enemy->HitParticles, SocketLocation, FRotator(0.f), false);
+        }
+      }
+      if (Enemy->HitSound)
+      {
+        UGameplayStatics::PlaySound2D(this, Enemy->HitSound);
+      }
+      if (DamageTypeClass)
+      {
+        UGameplayStatics::ApplyDamage(Enemy, Damage, GetController(), this, DamageTypeClass);
+      }
+    }
+  }
+}
+
+void AMainCharacter::DeathEnd() {
+  UKismetSystemLibrary::QuitGame(this, Cast<APlayerController>(GetController()), EQuitPreference::Quit, true);
 }

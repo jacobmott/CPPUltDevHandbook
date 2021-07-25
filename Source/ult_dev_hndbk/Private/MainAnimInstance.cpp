@@ -6,6 +6,7 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Enemy.h"
 
 void UMainAnimInstance::NativeInitializeAnimation()
 {
@@ -14,6 +15,7 @@ void UMainAnimInstance::NativeInitializeAnimation()
     Pawn = TryGetPawnOwner();
     if (Pawn){ 
       Main = Cast<AMainCharacter>(Pawn);
+      Enemy = Cast<AEnemy>(Pawn);
     }
   }
 }
@@ -49,6 +51,17 @@ void UMainAnimInstance::UpdateAnimationProperties(float DeltaTime)
         bIsAccelerating = false;
       }
     }
+    if (Enemy) { 
+      bIsAccelerating = Enemy->bIsAccelerating;
+    } 
+    else { 
+      Enemy = Cast<AEnemy>(Pawn);
+      if (Enemy) { 
+        bIsAccelerating = Enemy->bIsAccelerating; 
+      } 
+    }
+
+
 
   }
 
